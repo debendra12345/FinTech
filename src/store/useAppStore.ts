@@ -143,7 +143,8 @@ export const useAppStore = create<AppState>()(
       setTheme: (theme) => {
         set({ theme });
         if (typeof document !== 'undefined') {
-          document.documentElement.classList.toggle('dark', theme === 'dark');
+          document.documentElement.classList.remove('light', 'dark');
+          document.documentElement.classList.add(theme);
         }
       },
 

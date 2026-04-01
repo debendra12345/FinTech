@@ -1,14 +1,8 @@
 'use client';
 
 import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
+  ResponsiveContainer, AreaChart, Area,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/Card';
@@ -25,13 +19,15 @@ interface BalanceTrendChartProps {
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-popover border border-border rounded-xl p-3 shadow-xl">
-      <p className="text-xs font-semibold text-muted-foreground mb-2">{label}</p>
+    <div className="bg-popover border border-border rounded-xl p-3.5 shadow-2xl min-w-[160px]">
+      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">{label}</p>
       {payload.map((entry: { name: string; value: number; color: string }) => (
-        <div key={entry.name} className="flex items-center gap-2 text-sm">
-          <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
-          <span className="text-muted-foreground capitalize">{entry.name}:</span>
-          <span className="font-semibold text-foreground">{formatCurrency(entry.value)}</span>
+        <div key={entry.name} className="flex items-center justify-between gap-4 mb-1.5 last:mb-0">
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
+            <span className="text-xs text-muted-foreground capitalize">{entry.name}</span>
+          </div>
+          <span className="text-xs font-bold text-foreground tabular-nums">{formatCurrency(entry.value)}</span>
         </div>
       ))}
     </div>
@@ -39,84 +35,98 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 export function BalanceTrendChart({ data, isLoading }: BalanceTrendChartProps) {
-  if (isLoading) return <SkeletonChart className="h-full" />;
+  if (isLoading) return <SkeletonChart />;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2, type: 'spring', bounce: 0.2 }}
+      transition={{ delay: 0.15, type: 'spring', bounce: 0.15 }}
+      className="h-full"
     >
       <Card className="h-full">
-        <div className="mb-5">
-          <h2 className="text-sm font-semibold text-foreground">Cash Flow Trend</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Income vs expenses over the last 6 months</p>
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">Cash Flow Trend</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Income vs. expenses — last 6 months</p>
+          </div>
+          <div className="flex items-center gap-3">
+            {[
+              { label: 'Income', color: '#10b981' },
+              { label: 'Expenses', color: '#f43f5e' },
+              { label: 'Balance', color: '#6366f1' },
+            ].map(item => (
+              <div key={item.label} className="flex items-center gap-1.5 hidden sm:flex">
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+                <span className="text-[11px] text-muted-foreground">{item.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         <ResponsiveContainer width="100%" height={260}>
-          <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
             <defs>
-              <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+              <linearGradient id="gIncome" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" stopOpacity={0.18} />
+                <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
               </linearGradient>
-              <linearGradient id="expensesGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+              <linearGradient id="gExpenses" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.18} />
+                <stop offset="100%" stopColor="#f43f5e" stopOpacity={0} />
               </linearGradient>
-              <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+              <linearGradient id="gBalance" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#6366f1" stopOpacity={0.14} />
+                <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} vertical={false} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="hsl(var(--border))"
+              strokeOpacity={0.5}
+              vertical={false}
+            />
             <XAxis
               dataKey="month"
-              tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+              tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
               axisLine={false}
               tickLine={false}
+              dy={6}
             />
             <YAxis
-              tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+              tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+              tickFormatter={v => `$${(v / 1000).toFixed(0)}k`}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Legend
-              wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }}
-              formatter={(value) => (
-                <span style={{ color: 'var(--muted-foreground)', textTransform: 'capitalize' }}>
-                  {value}
-                </span>
-              )}
-            />
+            <Legend wrapperStyle={{ display: 'none' }} />
             <Area
               type="monotone"
               dataKey="income"
               stroke="#10b981"
               strokeWidth={2}
-              fill="url(#incomeGradient)"
+              fill="url(#gIncome)"
               dot={false}
-              activeDot={{ r: 4, fill: '#10b981' }}
+              activeDot={{ r: 4, fill: '#10b981', strokeWidth: 0 }}
             />
             <Area
               type="monotone"
               dataKey="expenses"
               stroke="#f43f5e"
               strokeWidth={2}
-              fill="url(#expensesGradient)"
+              fill="url(#gExpenses)"
               dot={false}
-              activeDot={{ r: 4, fill: '#f43f5e' }}
+              activeDot={{ r: 4, fill: '#f43f5e', strokeWidth: 0 }}
             />
             <Area
               type="monotone"
               dataKey="balance"
               stroke="#6366f1"
               strokeWidth={2}
-              fill="url(#balanceGradient)"
+              fill="url(#gBalance)"
               dot={false}
-              activeDot={{ r: 4, fill: '#6366f1' }}
+              activeDot={{ r: 4, fill: '#6366f1', strokeWidth: 0 }}
             />
           </AreaChart>
         </ResponsiveContainer>
