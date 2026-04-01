@@ -1,0 +1,237 @@
+/* Google Fonts must come first before @import "tailwindcss" */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+/* =============================================
+   TAILWIND V4 THEME MAPPING
+   ============================================= */
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-active: hsl(var(--sidebar-active));
+  --color-sidebar-active-foreground: hsl(var(--sidebar-active-foreground));
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+}
+
+/* =============================================
+   DESIGN TOKENS — LIGHT MODE
+   ============================================= */
+:root {
+  /* Base */
+  --background: 220 20% 97%;
+  --foreground: 224 71% 4%;
+
+  /* Card */
+  --card: 0 0% 100%;
+  --card-foreground: 224 71% 4%;
+
+  /* Popover */
+  --popover: 0 0% 100%;
+  --popover-foreground: 224 71% 4%;
+
+  /* Primary – Indigo */
+  --primary: 238 84% 62%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary */
+  --secondary: 220 14% 93%;
+  --secondary-foreground: 220 14% 20%;
+
+  /* Muted */
+  --muted: 220 14% 92%;
+  --muted-foreground: 220 9% 46%;
+
+  /* Accent */
+  --accent: 220 14% 91%;
+  --accent-foreground: 224 71% 4%;
+
+  /* Destructive */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Border */
+  --border: 220 13% 88%;
+
+  /* Input */
+  --input: 220 13% 96%;
+
+  /* Ring */
+  --ring: 238 84% 62%;
+
+  /* Sidebar */
+  --sidebar: 224 30% 12%;
+  --sidebar-foreground: 215 25% 80%;
+  --sidebar-border: 224 25% 18%;
+  --sidebar-accent: 224 25% 16%;
+  --sidebar-active: 224 25% 20%;
+  --sidebar-active-foreground: 0 0% 100%;
+}
+
+/* =============================================
+   DESIGN TOKENS — DARK MODE
+   ============================================= */
+.dark {
+  /* Base */
+  --background: 224 30% 8%;
+  --foreground: 215 25% 92%;
+
+  /* Card */
+  --card: 224 28% 11%;
+  --card-foreground: 215 25% 92%;
+
+  /* Popover */
+  --popover: 224 28% 13%;
+  --popover-foreground: 215 25% 92%;
+
+  /* Primary – Indigo */
+  --primary: 238 77% 65%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary */
+  --secondary: 224 25% 18%;
+  --secondary-foreground: 215 25% 85%;
+
+  /* Muted */
+  --muted: 224 25% 16%;
+  --muted-foreground: 215 15% 55%;
+
+  /* Accent */
+  --accent: 224 25% 16%;
+  --accent-foreground: 215 25% 92%;
+
+  /* Destructive */
+  --destructive: 358 70% 58%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Border */
+  --border: 224 20% 18%;
+
+  /* Input */
+  --input: 224 25% 14%;
+
+  /* Ring */
+  --ring: 238 77% 65%;
+
+  /* Sidebar */
+  --sidebar: 224 32% 7%;
+  --sidebar-foreground: 215 20% 70%;
+  --sidebar-border: 224 25% 12%;
+  --sidebar-accent: 224 25% 12%;
+  --sidebar-active: 224 25% 16%;
+  --sidebar-active-foreground: 0 0% 100%;
+}
+
+/* =============================================
+   BASE STYLES
+   ============================================= */
+* {
+  box-sizing: border-box;
+  border-color: hsl(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv11", "ss01";
+}
+
+/* =============================================
+   SCROLLBAR STYLING
+   ============================================= */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* =============================================
+   ANIMATION UTILITIES
+   ============================================= */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-from-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
+  50% { box-shadow: 0 0 0 8px hsl(var(--primary) / 0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+.animate-slide-left {
+  animation: slide-in-from-left 0.3s ease-out forwards;
+}
+
+/* =============================================
+   RECHARTS DARK MODE COMPATIBILITY
+   ============================================= */
+.recharts-text {
+  fill: hsl(var(--muted-foreground)) !important;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: hsl(var(--border)) !important;
+}
+
+/* =============================================
+   SELECTION
+   ============================================= */
+::selection {
+  background-color: hsl(var(--primary) / 0.2);
+  color: hsl(var(--foreground));
+}
