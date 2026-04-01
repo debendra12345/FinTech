@@ -20,6 +20,7 @@ const schema = z.object({
     'entertainment', 'healthcare', 'shopping', 'utilities', 'education', 'travel', 'other',
   ]),
   date: z.string().min(1, 'Date is required'),
+  status: z.enum(['completed', 'pending', 'failed']),
   merchant: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -36,6 +37,12 @@ const TYPE_OPTIONS = [
   { value: 'income', label: 'Income' },
   { value: 'expense', label: 'Expense' },
   { value: 'transfer', label: 'Transfer' },
+];
+
+const STATUS_OPTIONS = [
+  { value: 'completed', label: 'Completed' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'failed', label: 'Failed' },
 ];
 
 const CATEGORY_OPTIONS = [
@@ -72,6 +79,7 @@ export function TransactionForm({ isOpen, onClose, editTransaction }: Transactio
           amount: editTransaction.amount,
           type: editTransaction.type,
           category: editTransaction.category,
+          status: editTransaction.status,
           date: format(new Date(editTransaction.date), "yyyy-MM-dd'T'HH:mm"),
           merchant: editTransaction.merchant ?? '',
           notes: editTransaction.notes ?? '',
@@ -79,6 +87,7 @@ export function TransactionForm({ isOpen, onClose, editTransaction }: Transactio
       : {
           type: 'expense',
           category: 'food',
+          status: 'completed',
           date: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
         },
   });
@@ -162,12 +171,21 @@ export function TransactionForm({ isOpen, onClose, editTransaction }: Transactio
           />
         </div>
 
-        <Input
-          id="merchant"
-          label="Merchant (optional)"
-          placeholder="e.g., Amazon, Starbucks"
-          {...register('merchant')}
-        />
+        <div className="grid grid-cols-2 gap-3">
+          <Input
+            id="merchant"
+            label="Merchant (optional)"
+            placeholder="e.g., Amazon, Starbucks"
+            {...register('merchant')}
+          />
+          <Select
+            id="status"
+            label="Status"
+            options={STATUS_OPTIONS}
+            error={errors.status?.message}
+            {...register('status')}
+          />
+        </div>
 
         <Textarea
           id="notes"

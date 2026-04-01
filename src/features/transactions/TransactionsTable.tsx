@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, X, Plus, Download, ArrowUpDown, ChevronUp, ChevronDown,
   Edit2, Trash2, ArrowUpCircle, ArrowDownCircle, ArrowLeftRight,
-  SlidersHorizontal,
+  SlidersHorizontal, CheckCircle2, Clock, AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAppStore } from '@/store/useAppStore';
@@ -17,7 +17,7 @@ import { TransactionForm } from './TransactionForm';
 import {
   formatCurrency, formatDate, CATEGORY_LABELS, exportToCSV, debounce, cn,
 } from '@/lib/utils';
-import type { Transaction, TransactionCategory, TransactionType } from '@/types';
+import type { Transaction, TransactionCategory, TransactionType, TransactionStatus } from '@/types';
 
 /* ─────────────────────────────────── constants ─── */
 
@@ -26,6 +26,13 @@ const TYPE_OPTIONS: { value: TransactionType | 'all'; label: string }[] = [
   { value: 'income', label: 'Income' },
   { value: 'expense', label: 'Expense' },
   { value: 'transfer', label: 'Transfer' },
+];
+
+const STATUS_OPTIONS: { value: TransactionStatus | 'all'; label: string }[] = [
+  { value: 'all', label: 'All Statuses' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'failed', label: 'Failed' },
 ];
 
 const CATEGORY_OPTIONS: { value: TransactionCategory | 'all'; label: string }[] = [
@@ -55,6 +62,8 @@ export function TransactionsTable() {
   const [formOpen, setFormOpen] = useState(false);
   const [editTxn, setEditTxn] = useState<Transaction | null>(null);
   const [deleteTxnId, setDeleteTxnId] = useState<string | null>(null);
+  const [selectedTxn, setSelectedTxn] = useState<Transaction | null>(null);
+  
   const [localSearch, setLocalSearch] = useState(filters.search);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -92,6 +101,7 @@ export function TransactionsTable() {
     }
     if (filters.category !== 'all') r = r.filter(t => t.category === filters.category);
     if (filters.type !== 'all') r = r.filter(t => t.type === filters.type);
+    if (filters.status !== 'all' && filters.status !== undefined) r = r.filter(t => t.status === filters.status);
 
     r.sort((a, b) => {
       const mult = filters.sortOrder === 'desc' ? -1 : 1;
@@ -107,7 +117,7 @@ export function TransactionsTable() {
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const hasActiveFilters =
-    filters.search || filters.category !== 'all' || filters.type !== 'all';
+    filters.search || filters.category !== 'all' || filters.type !== 'all' || (filters.status !== 'all' && filters.status !== undefined);
 
   function toggleSort(field: 'date' | 'amount') {
     if (filters.sortBy === field) {
@@ -123,6 +133,7 @@ export function TransactionsTable() {
     setFilter('search', '');
     setFilter('category', 'all');
     setFilter('type', 'all');
+    setFilter('status', 'all');
   }
 
   function handleDelete() {
@@ -130,6 +141,7 @@ export function TransactionsTable() {
     deleteTransaction(deleteTxnId);
     toast.success('Transaction deleted');
     setDeleteTxnId(null);
+    setSelectedTxn(null);
   }
 
   /* ── sub-components ── */
@@ -156,6 +168,28 @@ export function TransactionsTable() {
     if (type === 'income') return <ArrowUpCircle className="h-4 w-4 text-emerald-400 shrink-0" />;
     if (type === 'expense') return <ArrowDownCircle className="h-4 w-4 text-rose-400 shrink-0" />;
     return <ArrowLeftRight className="h-4 w-4 text-blue-400 shrink-0" />;
+  }
+
+  function StatusBadge({ status }: { status: TransactionStatus }) {
+    if (status === 'completed') {
+      return (
+        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+          <CheckCircle2 className="h-3 w-3" /> Completed
+        </span>
+      );
+    }
+    if (status === 'pending') {
+      return (
+        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+          <Clock className="h-3 w-3" /> Pending
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-medium text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
+        <AlertCircle className="h-3 w-3" /> Failed
+      </span>
+    );
   }
 
   return (
@@ -200,16 +234,16 @@ export function TransactionsTable() {
 
         {/* Filter button */}
         <Button
-          variant={filtersOpen || (filters.category !== 'all' || filters.type !== 'all') ? 'secondary' : 'outline'}
+          variant={filtersOpen || (filters.category !== 'all' || filters.type !== 'all' || (filters.status !== 'all' && filters.status !== undefined)) ? 'secondary' : 'outline'}
           size="sm"
           leftIcon={<SlidersHorizontal className="h-3.5 w-3.5" />}
           onClick={() => setFiltersOpen(p => !p)}
           id="toggle-filters"
         >
           Filters
-          {(filters.category !== 'all' || filters.type !== 'all') && (
+          {(filters.category !== 'all' || filters.type !== 'all' || (filters.status !== 'all' && filters.status !== undefined)) && (
             <span className="ml-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-              {(filters.category !== 'all' ? 1 : 0) + (filters.type !== 'all' ? 1 : 0)}
+              {(filters.category !== 'all' ? 1 : 0) + (filters.type !== 'all' ? 1 : 0) + ((filters.status !== 'all' && filters.status !== undefined) ? 1 : 0)}
             </span>
           )}
         </Button>
@@ -247,9 +281,9 @@ export function TransactionsTable() {
             transition={{ duration: 0.18 }}
             className="overflow-hidden"
           >
-            <div className="flex flex-wrap gap-2 p-4 rounded-xl bg-muted/40 border border-border">
+            <div className="flex flex-col gap-3 p-4 rounded-xl bg-muted/40 border border-border">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type:</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-[70px]">Type:</span>
                 {TYPE_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
@@ -265,15 +299,15 @@ export function TransactionsTable() {
                   </button>
                 ))}
               </div>
-              <div className="w-full border-t border-border/60 pt-2 flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category:</span>
-                {CATEGORY_OPTIONS.slice(1).map(opt => (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-[70px]">Status:</span>
+                {STATUS_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
-                    onClick={() => setFilter('category', opt.value)}
+                    onClick={() => setFilter('status', opt.value)}
                     className={cn(
                       'h-7 px-3 rounded-full text-xs font-medium border transition-all duration-150',
-                      filters.category === opt.value
+                      (filters.status ?? 'all') === opt.value
                         ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                         : 'bg-transparent text-muted-foreground border-border hover:border-primary/50 hover:text-foreground',
                     )}
@@ -281,6 +315,25 @@ export function TransactionsTable() {
                     {opt.label}
                   </button>
                 ))}
+              </div>
+              <div className="border-t border-border/60 pt-3 flex items-start gap-2 flex-wrap">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-[70px] mt-1.5">Category:</span>
+                <div className="flex-1 flex flex-wrap gap-2">
+                  {CATEGORY_OPTIONS.slice(1).map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setFilter('category', opt.value)}
+                      className={cn(
+                        'h-7 px-3 rounded-full text-xs font-medium border transition-all duration-150',
+                        filters.category === opt.value
+                          ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                          : 'bg-transparent text-muted-foreground border-border hover:border-primary/50 hover:text-foreground',
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -303,6 +356,12 @@ export function TransactionsTable() {
               <button onClick={() => setFilter('type', 'all')}><X className="h-3 w-3" /></button>
             </span>
           )}
+          {filters.status !== 'all' && filters.status !== undefined && (
+            <span className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
+              {filters.status}
+              <button onClick={() => setFilter('status', 'all')}><X className="h-3 w-3" /></button>
+            </span>
+          )}
           {filters.category !== 'all' && (
             <span className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
               {CATEGORY_LABELS[filters.category as TransactionCategory]}
@@ -316,7 +375,7 @@ export function TransactionsTable() {
       )}
 
       {/* ── Table ── */}
-      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
         {isLoading ? (
           <div className="p-4"><SkeletonTable rows={8} /></div>
         ) : paginated.length === 0 ? (
@@ -362,9 +421,12 @@ export function TransactionsTable() {
                   <th className="px-4 py-3 text-left">
                     <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">Category</span>
                   </th>
+                  <th className="px-4 py-3 text-left">
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">Status</span>
+                  </th>
                   <SortTh field="amount" label="Amount" />
                   {role === 'admin' && (
-                    <th className="px-4 py-3 text-right">
+                    <th className="px-5 py-3 text-right">
                       <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">Actions</span>
                     </th>
                   )}
@@ -379,7 +441,8 @@ export function TransactionsTable() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ delay: i * 0.02 }}
-                      className="border-b border-border/60 last:border-0 hover:bg-accent/40 transition-colors duration-100 group"
+                      className="border-b border-border/60 last:border-0 hover:bg-accent/40 transition-colors duration-100 group cursor-pointer"
+                      onClick={() => setSelectedTxn(txn)}
                     >
                       {/* Description */}
                       <td className="px-5 py-3.5">
@@ -419,6 +482,11 @@ export function TransactionsTable() {
                         </Badge>
                       </td>
 
+                      {/* Status */}
+                      <td className="px-4 py-3.5">
+                        <StatusBadge status={txn.status} />
+                      </td>
+
                       {/* Amount */}
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span className={cn(
@@ -433,7 +501,7 @@ export function TransactionsTable() {
 
                       {/* Actions — admin only */}
                       {role === 'admin' && (
-                        <td className="px-4 py-3.5">
+                        <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                             <Button
                               variant="ghost"
@@ -509,6 +577,107 @@ export function TransactionsTable() {
         onClose={() => { setFormOpen(false); setEditTxn(null); }}
         editTransaction={editTxn}
       />
+
+      {/* Transaction Details Modal */}
+      <Modal
+        isOpen={!!selectedTxn}
+        onClose={() => setSelectedTxn(null)}
+        title="Transaction Details"
+        description="View complete information for this transaction."
+        size="md"
+      >
+        {selectedTxn && (
+          <div className="space-y-6 pt-2">
+            <div className="flex items-center gap-4 border-b border-border pb-6">
+              <div className={cn(
+                'h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-border/50',
+                selectedTxn.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' :
+                selectedTxn.type === 'expense' ? 'bg-rose-500/10 text-rose-500' : 'bg-blue-500/10 text-blue-500',
+              )}>
+                {selectedTxn.type === 'income' ? <ArrowUpCircle className="h-7 w-7" /> : 
+                 selectedTxn.type === 'expense' ? <ArrowDownCircle className="h-7 w-7" /> : 
+                 <ArrowLeftRight className="h-7 w-7" />}
+              </div>
+              <div className="flex-1">
+                <p className="text-xl font-bold text-foreground leading-tight">{selectedTxn.description}</p>
+                <p className={cn(
+                  'text-lg font-bold mt-1',
+                  selectedTxn.type === 'income' ? 'text-emerald-400' :
+                  selectedTxn.type === 'expense' ? 'text-rose-400' : 'text-blue-400',
+                )}>
+                  {selectedTxn.type === 'income' ? '+' : selectedTxn.type === 'expense' ? '-' : ''}
+                  {formatCurrency(selectedTxn.amount)}
+                </p>
+              </div>
+              <div>
+                <StatusBadge status={selectedTxn.status} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-y-5 gap-x-4">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1">Date & Time</p>
+                <p className="text-sm font-medium text-foreground">
+                  {formatDate(selectedTxn.date, 'MMM d, yyyy • h:mm a')}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1">Category</p>
+                <div className="mt-1">
+                  <Badge variant={selectedTxn.type === 'income' ? 'income' : selectedTxn.type === 'expense' ? 'expense' : 'transfer'} dot>
+                    {CATEGORY_LABELS[selectedTxn.category]}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1">Transaction Type</p>
+                <p className="text-sm font-medium text-foreground capitalize">
+                  {selectedTxn.type}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1">Merchant</p>
+                <p className="text-sm font-medium text-foreground">
+                  {selectedTxn.merchant || '—'}
+                </p>
+              </div>
+            </div>
+
+            {selectedTxn.notes && (
+              <div className="pt-2 border-t border-border">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">Notes</p>
+                <p className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-xl border border-border/50">
+                  {selectedTxn.notes}
+                </p>
+              </div>
+            )}
+
+            {role === 'admin' && (
+              <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                <Button variant="danger" onClick={() => {
+                  setSelectedTxn(null);
+                  setDeleteTxnId(selectedTxn.id);
+                }}>
+                  <Trash2 className="h-4 w-4 mr-2" /> Delete
+                </Button>
+                <Button variant="outline" onClick={() => {
+                  setSelectedTxn(null);
+                  setEditTxn(selectedTxn);
+                  setFormOpen(true);
+                }}>
+                  <Edit2 className="h-4 w-4 mr-2" /> Edit Transaction
+                </Button>
+              </div>
+            )}
+            
+            {role === 'viewer' && (
+              <div className="flex justify-end pt-4 border-t border-border">
+                <Button onClick={() => setSelectedTxn(null)}>Close</Button>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
 
       <Modal
         isOpen={!!deleteTxnId}

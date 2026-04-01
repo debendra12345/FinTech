@@ -10,7 +10,12 @@ function loadFromStorage(): Transaction[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return mockTransactions;
     const parsed = JSON.parse(raw) as Transaction[];
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : mockTransactions;
+    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].status) {
+      return parsed;
+    }
+    // Storage has old format transactions without status
+    saveToStorage(mockTransactions);
+    return mockTransactions;
   } catch {
     return mockTransactions;
   }

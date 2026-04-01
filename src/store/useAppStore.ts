@@ -59,6 +59,7 @@ const DEFAULT_FILTERS: TransactionFilters = {
   search: '',
   category: 'all',
   type: 'all',
+  status: 'all',
   sortBy: 'date',
   sortOrder: 'desc',
   page: 1,

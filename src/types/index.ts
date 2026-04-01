@@ -1,5 +1,7 @@
 // Transaction Types
 export type TransactionType = 'income' | 'expense' | 'transfer';
+export type TransactionStatus = 'completed' | 'pending' | 'failed';
+
 
 export type TransactionCategory =
   | 'salary'
@@ -23,6 +25,7 @@ export interface Transaction {
   amount: number;
   type: TransactionType;
   category: TransactionCategory;
+  status: TransactionStatus;
   merchant?: string;
   notes?: string;
 }
@@ -43,6 +46,7 @@ export interface TransactionFilters {
   search: string;
   category: TransactionCategory | 'all';
   type: TransactionType | 'all';
+  status: TransactionStatus | 'all';
   sortBy: 'date' | 'amount';
   sortOrder: 'asc' | 'desc';
   page: number;
@@ -93,6 +97,7 @@ export interface TransactionFormData {
   amount: number;
   type: TransactionType;
   category: TransactionCategory;
+  status: TransactionStatus;
   date: string;
   merchant?: string;
   notes?: string;
